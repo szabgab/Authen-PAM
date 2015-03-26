@@ -5,7 +5,7 @@ PAM/FAQ.pod
 Makefile.PL
 PAM.pm.in
 PAM.xs
-test.pl
+t/test.t
 typemap
 configure
 configure.ac
