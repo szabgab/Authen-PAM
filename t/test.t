@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 
 use Test::More;
 plan tests => 10;
@@ -29,98 +30,89 @@ sub my_fail_delay {
 }
 
 {
-  my ($pamh, $item);
-  my $res = -1;
+    my ($pamh, $item);
+    my $res = -1;
 
-  my $pam_service = "login";
-  my $login_name = getpwuid($<);
-  my $tty_name = ttyname(fileno(STDIN)) or
-    die "Can't obtain the tty name!\n";
+    my $pam_service = "login";
+    my $login_name = getpwuid($<);
+    my $tty_name = ttyname(fileno(STDIN)) or die "Can't obtain the tty name!\n";
 
-#  $res = pam_start($pam_service, $login_name, \&Authen::PAM::pam_default_conv, $pamh);
-  if ($login_name) {
-    print
-      "---- The remaining tests will be run for service '$pam_service', ",
-      "user '$login_name' and\n---- device '$tty_name'.\n";
-
-    $res = pam_start($pam_service, $login_name, $pamh);
-  } else { # If we cannot get the username then ask for it
-    print
-      "---- The remaining tests will be run for service '$pam_service' and\n",
-      "---- device '$tty_name'.\n";
-
-    $res = pam_start($pam_service, $pamh);
-  }
-  pam_ok($pamh, $res);
-
-  $res = pam_get_item($pamh, PAM_SERVICE(), $item);
-  pam_ok($pamh, $res, $item eq $pam_service);
-
-#  $res = pam_get_item($pamh, PAM_USER(), $item);
-#  pam_ok($pamh, $res, $item eq $login_name);
-
-#  $res = pam_set_item($pamh, PAM_CONV(), \&Authen::PAM::pam_default_conv);
-#  pam_ok($pamh, $res);
-
-  $res = pam_get_item($pamh, PAM_CONV(), $item);
-  pam_ok($pamh, $res, $item == \&Authen::PAM::pam_default_conv);
-
-  $res = pam_set_item($pamh, PAM_TTY(), $tty_name);
-  pam_ok($pamh, $res);
-
-  $res = pam_get_item($pamh, PAM_TTY(), $item);
-  pam_ok($pamh, $res, $item eq $tty_name);
-
-  SKIP: {
-    skip 'environment functions are not supported by your PAM library', 2 if not HAVE_PAM_ENV_FUNCTIONS();
-    $res = pam_putenv($pamh, "_ALPHA=alpha");
+    #$res = pam_start($pam_service, $login_name, \&Authen::PAM::pam_default_conv, $pamh);
+    if ($login_name) {
+        diag "The remaining tests will be run for service '$pam_service', user '$login_name', device '$tty_name'.";
+        $res = pam_start($pam_service, $login_name, $pamh);
+    } else { # If we cannot get the username then ask for it
+        diag "The remaining tests will be run for service '$pam_service', device '$tty_name'.";
+        $res = pam_start($pam_service, $pamh);
+    }
     pam_ok($pamh, $res);
 
-    my %en = pam_getenvlist($pamh);
-    is($en{"_ALPHA"}, "alpha");
-  };
+    $res = pam_get_item($pamh, PAM_SERVICE(), $item);
+    pam_ok($pamh, $res, $item eq $pam_service);
 
-#  if (HAVE_PAM_FAIL_DELAY()) {
-#    $res = pam_set_item($pamh, PAM_FAIL_DELAY(), \&my_fail_delay);
-#    pam_ok($pamh, $res);
-#  } else {
-#    skip('custom fail delay function is not supported by your PAM library');
-#  }
+    #$res = pam_get_item($pamh, PAM_USER(), $item);
+    #pam_ok($pamh, $res, $item eq $login_name);
 
-   if ($login_name) {
-     print
-       "---- Now, you may be prompted to enter the password of '$login_name'.\n";
-   } else{
-     print
-       "---- Now, you may be prompted to enter a user name and a password.\n";
-   }
+    #$res = pam_set_item($pamh, PAM_CONV(), \&Authen::PAM::pam_default_conv);
+    #pam_ok($pamh, $res);
 
-  $res = pam_authenticate($pamh, 0);
-#  $res = pam_chauthtok($pamh);
-  {
+    $res = pam_get_item($pamh, PAM_CONV(), $item);
+    pam_ok($pamh, $res, $item == \&Authen::PAM::pam_default_conv);
+
+    $res = pam_set_item($pamh, PAM_TTY(), $tty_name);
     pam_ok($pamh, $res);
-    print 
-      "---- The failure of test 9 could be due to your PAM configuration\n",
-      "---- or typing an incorrect password.\n"
-      if ($res != PAM_SUCCESS());
-  }
 
-#  if (HAVE_PAM_FAIL_DELAY()) {
-#    ok($res == $fd_status);
-#  } else {
-#    skip('custom fail delay function is not supported by your PAM library');
-#  }
+    $res = pam_get_item($pamh, PAM_TTY(), $item);
+    pam_ok($pamh, $res, $item eq $tty_name);
 
-  $res = pam_end($pamh, 0);
-  ok($res == PAM_SUCCESS());
+    SKIP: {
+        skip 'environment functions are not supported by your PAM library', 2 if not HAVE_PAM_ENV_FUNCTIONS();
+        $res = pam_putenv($pamh, "_ALPHA=alpha");
+        pam_ok($pamh, $res);
 
-  # Checking the OO interface
-  $pamh = new Authen::PAM($pam_service, $login_name);
-  ok(ref($pamh));
-#
-#  $res = $pamh->pam_authenticate;
-#  $res = $pamh->pam_chauthtok;
-#  pam_ok($pamh, $res);
-#
-  $pamh = 0;  # this will destroy the object (and call pam_end)
+        my %en = pam_getenvlist($pamh);
+        is($en{"_ALPHA"}, "alpha");
+    };
+
+    #if (HAVE_PAM_FAIL_DELAY()) {
+    #    $res = pam_set_item($pamh, PAM_FAIL_DELAY(), \&my_fail_delay);
+    #    pam_ok($pamh, $res);
+    #} else {
+    #    skip('custom fail delay function is not supported by your PAM library');
+    #}
+
+    if ($login_name) {
+        diag "Now, you may be prompted to enter the password of '$login_name'.";
+    } else{
+        diag "Now, you may be prompted to enter a user name and a password.";
+    }
+
+    $res = pam_authenticate($pamh, 0);
+    #$res = pam_chauthtok($pamh);
+    {
+        pam_ok($pamh, $res);
+        diag "The failure of test 9 could be due to your PAM configuration or typing an incorrect password."
+            if ($res != PAM_SUCCESS());
+    }
+
+    #if (HAVE_PAM_FAIL_DELAY()) {
+    #    ok($res == $fd_status);
+    #} else {
+    #    skip('custom fail delay function is not supported by your PAM library');
+    #}
+
+    $res = pam_end($pamh, 0);
+    ok($res == PAM_SUCCESS());
+    diag PAM_SUCCESS();
+
+    diag('Checking the OO interface');
+    $pamh = new Authen::PAM($pam_service, $login_name);
+    ok(ref($pamh));
+
+    #$res = $pamh->pam_authenticate;
+    #$res = $pamh->pam_chauthtok;
+    #pam_ok($pamh, $res);
+
+    $pamh = 0;  # this will destroy the object (and call pam_end)
 }
+
