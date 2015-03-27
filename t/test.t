@@ -10,10 +10,11 @@ use Authen::PAM; # qw(:functions :constants);
 
 
 sub pam_ok {
-    my ($pamh, $pam_ret_val) = @_ ;
+    my ($pamh, $pam_ret_val, $name) = @_ ;
+    $name ||= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $T = Test::More->builder;
-    $T->ok($pam_ret_val == PAM_SUCCESS(), "$pam_ret_val - " . pam_strerror($pamh, $pam_ret_val));
+    $T->ok($pam_ret_val == PAM_SUCCESS(), "$name - $pam_ret_val - " . pam_strerror($pamh, $pam_ret_val));
 }
 
 sub my_fail_delay {
@@ -38,10 +39,10 @@ sub my_fail_delay {
         diag "The remaining tests will be run for service '$pam_service', device '$tty_name'.";
         $res = pam_start($pam_service, $pamh);
     }
-    pam_ok($pamh, $res);
+    pam_ok($pamh, $res, 'pam_start');
 
     $res = pam_get_item($pamh, PAM_SERVICE(), $item);
-    pam_ok($pamh, $res);
+    pam_ok($pamh, $res, 'pam_get_item PAM_SERVICE');
 	is($item, $pam_service);
 
     #$res = pam_get_item($pamh, PAM_USER(), $item);
@@ -52,23 +53,23 @@ sub my_fail_delay {
     #pam_ok($pamh, $res);
 
     $res = pam_get_item($pamh, PAM_CONV(), $item);
-    pam_ok($pamh, $res);
+    pam_ok($pamh, $res, 'pam_get_item PAM_CONV');
 	ok($item == \&Authen::PAM::pam_default_conv);
 
     $res = pam_set_item($pamh, PAM_TTY(), $tty_name);
-    pam_ok($pamh, $res);
+    pam_ok($pamh, $res, 'PAM_TTY tty_name');
 
     $res = pam_get_item($pamh, PAM_TTY(), $item);
-    pam_ok($pamh, $res);
+    pam_ok($pamh, $res, 'PAM_TTY item');
     is($item, $tty_name);
 
     SKIP: {
         skip 'environment functions are not supported by your PAM library', 2 if not HAVE_PAM_ENV_FUNCTIONS();
         $res = pam_putenv($pamh, "_ALPHA=alpha");
-        pam_ok($pamh, $res);
+        pam_ok($pamh, $res, 'pam_putenv');
 
         my %en = pam_getenvlist($pamh);
-        is($en{"_ALPHA"}, "alpha");
+        is($en{'_ALPHA'}, 'alpha', 'pam_getenvlist');
     };
 
     #if (HAVE_PAM_FAIL_DELAY()) {
@@ -87,7 +88,7 @@ sub my_fail_delay {
     $res = pam_authenticate($pamh, 0);
     #$res = pam_chauthtok($pamh);
     {
-        pam_ok($pamh, $res) or
+        pam_ok($pamh, $res, 'pam_authenticate') or
             diag "The failure of test 9 could be due to your PAM configuration or typing an incorrect password.";
     }
 
@@ -101,7 +102,7 @@ sub my_fail_delay {
     ok($res == PAM_SUCCESS());
 
     diag('Checking the OO interface');
-    $pamh = new Authen::PAM($pam_service, $login_name);
+    $pamh = Authen::PAM->new($pam_service, $login_name);
     ok(ref($pamh));
 
     #$res = $pamh->pam_authenticate;
