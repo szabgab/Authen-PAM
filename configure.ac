@@ -1,6 +1,6 @@
 dnl -*-m4-*-
 
-AC_INIT([Authen::PAM],[0.16],[],[Authen-PAM])
+AC_INIT([Authen::PAM],[0.16_01],[],[Authen-PAM])
 
 AC_PREREQ([2.50])
 

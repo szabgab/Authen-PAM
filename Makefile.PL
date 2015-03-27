@@ -27,21 +27,6 @@ sub configure {
     return $options;
 }
 
-sub MY::postamble {
-    my $TARG = MM->catfile('d','PAM.pm');
-qq!$TARG: Makefile
-\techo '#This is a dummy file so CPAN will find a VERSION' > $TARG
-\techo 'package Authen::PAM;' >> $TARG
-\techo '\$\$VERSION = "\$(VERSION)";' >>$TARG
-\techo '#This is to make sure require will return an error' >>$TARG
-\techo '0;' >>$TARG
-\techo '__END__' >>$TARG
-\techo '' >>$TARG
-\tperl -ne 'print if /^=\\w/ ... /^=cut/' PAM.pm.in >>$TARG
-
-!
-}
-
 
 WriteMakefile(
     'NAME'	=> 'Authen::PAM',
@@ -50,11 +35,6 @@ WriteMakefile(
     'INC'       => '-I.',          # Needed for PAM_config.h
     'CONFIGURE' => \&configure,
     'PREREQ_PM' => { POSIX => 0 }, # module dependenices
-    'dist'      => {
-        COMPRESS => 'gzip -9f',
-        SUFFIX => 'gz',
-        DIST_DEFAULT => 'd/PAM.pm tardist'
-    },
     'clean'     => { FILES => "PAM.pm" },
     'realclean' => { FILES => "config.* pam.cfg" }
 );

@@ -11,5 +11,3 @@ configure
 configure.ac
 PAM_config.h.in
 pam.cfg.in
-d/PAM.pm
-META.yml                                 Module meta-data (added by MakeMaker)
