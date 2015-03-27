@@ -79,18 +79,19 @@ sub my_fail_delay {
     #    skip('custom fail delay function is not supported by your PAM library');
     #}
 
-    if ($login_name) {
-        diag "Now, you may be prompted to enter the password of '$login_name'.";
-    } else{
-        diag "Now, you may be prompted to enter a user name and a password.";
-    }
+    SKIP: {
+        skip 'prompting only without harness', 1 if $ENV{HARNESS_ACTIVE};
+        if ($login_name) {
+            diag "Now, you may be prompted to enter the password of '$login_name'.";
+        } else{
+            diag "Now, you may be prompted to enter a user name and a password.";
+        }
 
-    $res = pam_authenticate($pamh, 0);
-    #$res = pam_chauthtok($pamh);
-    {
+        my $res = pam_authenticate($pamh, 0);
+        #$res = pam_chauthtok($pamh);
         pam_ok($pamh, $res, 'pam_authenticate') or
             diag "The failure of test 9 could be due to your PAM configuration or typing an incorrect password.";
-    }
+    };
 
     #if (HAVE_PAM_FAIL_DELAY()) {
     #    ok($res == $fd_status);
