@@ -39,6 +39,9 @@ things installed on your system:
     - Darwin 6.0 and Mac OS X 10.2
 
 
+   On Ubuntu install libpam-dev
+
+
 BUILDING AND INSTALLING THE MODULE
 ==================================
 
