@@ -1,5 +1,9 @@
 Revision history for Perl extension Authen::PAM.
 
+0.16_01 2015.03.27
+    - Unofficial release by Gabor Szabo
+    - Convert old school test.pl to modern Test::More based t/test.t
+
 0.16  2005-Sep-20
 	- export the PAM_BINARY_PROMPT message type
 	- minor fix in the configure script for testing DL_LOAD_FLAGS

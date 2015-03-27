@@ -6,10 +6,6 @@ Authen::PAM::FAQ - Frequently-Asked Questions about Authen::PAM.
 
 perldoc Authen::PAM::FAQ
 
-=head1 VERSION
-
-This document is currently at version I<0.05>, as of I<May 4, 2005>
-
 =head1 DESCRIPTION
 
 =head2 1. Can I authenticate a user non interactively?
